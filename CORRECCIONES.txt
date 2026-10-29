@@ -1,0 +1,34 @@
+PanelNica — revisión 2, 29/10/2026
+
+INICIO
+Extrae el ZIP en una carpeta nueva y abre PanelNica\Iniciar.cmd.
+También puedes abrir PanelNica.slnx en Visual Studio.
+El ejecutable necesita .NET 10 Desktop Runtime.
+
+ERROR CORREGIDO
+En la entrega anterior, CargarCiudadesAsync no llamaba a MostrarCiudades cuando MariaDB respondía correctamente. Por eso una consulta sin registros dejaba el selector vacío. Ahora la respuesta pasa por MostrarCiudades y ofrece las cinco ciudades iniciales cuando no hay registros. No se modifica ni se rellena automáticamente la base del usuario.
+
+VERIFICACIÓN DE ESTA REVISIÓN
+Compilación Release sin errores.
+11 comprobaciones de interfaz aprobadas, incluidas:
+- Apertura real de la ventana y evento Shown con respuesta asíncrona vacía: Managua seleccionada.
+- Botón Consultar clima: muestra el pronóstico de prueba recibido.
+- Botón Recargar ciudades: muestra la ciudad devuelta por la fuente de prueba.
+- Error de conexión a MariaDB: aparecen ciudades de respaldo seleccionables.
+La nueva prueba falló antes del arreglo y pasó después.
+Las respuestas de ciudades y clima de esas pruebas son controladas; no son datos meteorológicos reales. No se verificó la base de datos del usuario ni la API externa en esta revisión.
+
+Comando de pruebas:
+dotnet bin\Release\net10.0-windows\PanelNica.dll --ui-test
+
+Se conservan las mejoras anteriores del historial y las carpetas de integrantes. VALIDACION.md corresponde a una versión anterior. La copia del Escritorio no se modificó.
+
+ACTUALIZACIÓN EN ESTA MISMA CARPETA — 29/10/2026
+- El modo sin conexión se identifica en Clima y en el menú.
+- Clima incluye «Activar Internet y consultar»; solo al pulsarlo se cambia al modo en línea.
+- Cuando no hay respaldo, el mensaje indica que debe desmarcarse «Usar solamente el respaldo de MariaDB».
+- El menú sincroniza la casilla al regresar desde Clima.
+- Release compilado y 16 comprobaciones de interfaz aprobadas.
+- Consulta pública directa a Open-Meteo para Matagalpa: respuesta correcta con clima actual y cinco días de pronóstico.
+- No se creó ni modificó ninguna base de datos para estas comprobaciones. La prueba de falta de conexión usa un puerto local sin servidor; la consulta pública no usa MariaDB.
+- Ejecutar Iniciar.cmd en esta carpeta para abrir la compilación actualizada.
