@@ -42,11 +42,11 @@ Public Class frmTipoCambio
         diferencia.Text = "Diferencia: sin datos comparables"
         referencia.Text = "BCE: no consultado"
         AddHandler consultar.Click, Async Sub(sender, e) Await ConsultarAsync()
-        AddHandler convertir.Click, Sub(sender, e) Convertir()
+        AddHandler convertir.Click, Sub(sender, e) CalcularConversion()
     End Sub
 
     Private Async Function ConsultarAsync() As Task
-        Await EjecutarAsync(Async Function(ct)
+        Await EjecutarAsync(Async Function(ct) As Task
             tasaMercado = Nothing
             tasaBCN = Nothing
             Dim errores As New List(Of String)
@@ -65,6 +65,11 @@ Public Class frmTipoCambio
             Catch ex As Exception When Not TypeOf ex Is OperationCanceledException
                 oficial.Text = "BCN: no disponible"
                 errores.Add("BCN: " & ex.Message)
+            End Try
+
+            ' VB.NET no permite Await dentro de un bloque Catch.
+            ' Consultar el BCE después de terminar el Try/Catch del BCN.
+            If tasaBCN Is Nothing Then
                 Try
                     Dim euro = Await New ServicioBCE().ConsultarAsync(ct)
                     referencia.Text = $"BCE (referencia distinta): 1 EUR = {Numero(euro.Tasa)} USD · {euro.FechaFuente}"
@@ -72,7 +77,7 @@ Public Class frmTipoCambio
                     referencia.Text = "BCE: no disponible"
                     errores.Add("BCE: " & exBce.Message)
                 End Try
-            End Try
+            End If
 
             If tasaMercado IsNot Nothing AndAlso tasaBCN IsNot Nothing Then
                 Dim delta = tasaMercado.Tasa - tasaBCN.Tasa
@@ -82,7 +87,7 @@ Public Class frmTipoCambio
                 diferencia.Text = "Sin dos tasas NIO/USD disponibles para comparar."
             End If
             convertir.Enabled = tasaMercado IsNot Nothing OrElse tasaBCN IsNot Nothing
-            Convertir()
+            CalcularConversion()
 
             Try
                 Dim repo As New Repositorio()
@@ -105,7 +110,7 @@ Public Class frmTipoCambio
         End Function, consultar, convertir)
     End Function
 
-    Private Sub Convertir()
+    Private Sub CalcularConversion()
         Dim tasa = If(tasaMercado, tasaBCN)
         If tasa Is Nothing OrElse tasa.Tasa <= 0D Then
             resultado.Text = "Conversión pendiente: consulta una tasa NIO/USD."
